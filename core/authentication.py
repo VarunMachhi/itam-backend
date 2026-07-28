@@ -42,6 +42,15 @@ class AuthenticatedDevice:
 class DeviceKeyAuthentication(authentication.BaseAuthentication):
     keyword = 'Api-Key'
 
+    def authenticate_header(self, request):
+        """Without this, DRF can't tell a genuine 401 (bad/missing
+        credentials) from a real 403 (valid credentials, not allowed) --
+        it silently rewrites EVERY authentication failure into the same
+        generic 403, no matter the actual reason. That's exactly what
+        made 'invalid API key' and 'device deactivated' produce an
+        identical response the client couldn't tell apart."""
+        return self.keyword
+
     def authenticate(self, request):
         auth_header = authentication.get_authorization_header(request).decode('utf-8')
         if not auth_header or not auth_header.startswith(self.keyword):

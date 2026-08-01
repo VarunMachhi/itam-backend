@@ -108,6 +108,12 @@ class Asset(models.Model):
     cpu_name = models.CharField("System Model (Cabinet)", max_length=200, blank=True)
     cpu_serial = models.CharField(max_length=120, blank=True)
     processor = models.CharField(max_length=200, blank=True)
+    system_brand = models.CharField(max_length=150, blank=True)
+    cpu_manufacturer = models.CharField(max_length=100, blank=True)
+    cpu_cores = models.CharField(max_length=20, blank=True)
+    cpu_threads = models.CharField(max_length=20, blank=True)
+    cpu_clock_speed = models.CharField(max_length=40, blank=True)
+    cpu_architecture = models.CharField(max_length=20, blank=True)
 
     motherboard_manufacturer = models.CharField(max_length=150, blank=True)
     motherboard_model = models.CharField(max_length=150, blank=True)
@@ -122,11 +128,16 @@ class Asset(models.Model):
     monitor_name = models.CharField(max_length=150, blank=True)
     monitor_serial = models.CharField(max_length=120, blank=True)
     monitor_manufacturer = models.CharField(max_length=150, blank=True)
+    monitor_screen_size = models.CharField(max_length=20, blank=True)
+    monitor_resolution = models.CharField(max_length=20, blank=True)
+    monitor_manufacture_date = models.CharField(max_length=40, blank=True)
 
     mouse_name = models.CharField(max_length=150, blank=True)
     mouse_serial = models.CharField(max_length=120, blank=True)
+    mouse_brand = models.CharField(max_length=150, blank=True)
     keyboard_name = models.CharField(max_length=150, blank=True)
     keyboard_serial = models.CharField(max_length=120, blank=True)
+    keyboard_brand = models.CharField(max_length=150, blank=True)
 
     ups_name = models.CharField(max_length=150, blank=True)
     ups_serial = models.CharField(max_length=120, blank=True)
@@ -137,6 +148,12 @@ class Asset(models.Model):
     purchase_date = models.CharField(max_length=60, blank=True)
     handover_date = models.CharField(max_length=60, blank=True)
 
+    # JSON: {field_name: {detected, current, verified_by, verified_at}} --
+    # tracks manual corrections to the key identity serials without
+    # discarding what auto-detect originally found (see item 2/9 of the
+    # hardware-accuracy requirements: preserve both values, record who/when).
+    serial_verification = models.JSONField(default=dict, blank=True)
+
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -146,11 +163,13 @@ class Asset(models.Model):
     # trail. JSON list fields (ram_devices, storage_devices) are handled
     # separately in change_detection.py.
     SCALAR_TRACKED_FIELDS = [
-        'cpu_name', 'cpu_serial', 'processor',
+        'cpu_name', 'cpu_serial', 'processor', 'system_brand',
+        'cpu_manufacturer', 'cpu_cores', 'cpu_threads', 'cpu_clock_speed', 'cpu_architecture',
         'motherboard_manufacturer', 'motherboard_model', 'motherboard_serial', 'bios_serial',
         'ram_total',
         'monitor_name', 'monitor_serial', 'monitor_manufacturer',
-        'mouse_name', 'mouse_serial', 'keyboard_name', 'keyboard_serial',
+        'monitor_screen_size', 'monitor_resolution',
+        'mouse_name', 'mouse_serial', 'mouse_brand', 'keyboard_name', 'keyboard_serial', 'keyboard_brand',
         'ups_name', 'ups_serial', 'ups_capacity',
     ]
 

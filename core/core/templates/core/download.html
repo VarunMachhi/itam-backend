@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Download - Enterprise Asset Management System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    :root {
+        --primary: #283593;
+        --primary-dark: #1a237e;
+        --success: #2e7d32;
+        --muted: #667085;
+        --bg: #f4f5f9;
+        --card: #ffffff;
+        --border: #e2e4ea;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: #1c1f26;
+    }
+    header {
+        background: var(--primary);
+        color: #fff;
+        padding: 28px 24px;
+    }
+    header h1 { margin: 0; font-size: 22px; }
+    header p { margin: 4px 0 0; opacity: 0.85; font-size: 14px; }
+    .wrap {
+        max-width: 640px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 28px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .version-badge {
+        display: inline-block;
+        background: #e8eaf6;
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 13px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        margin-bottom: 14px;
+    }
+    h2 { margin: 0 0 6px; font-size: 20px; }
+    .changelog {
+        white-space: pre-wrap;
+        background: #fafafa;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 14px 16px;
+        font-size: 14px;
+        color: #333;
+        margin: 16px 0 22px;
+    }
+    .btn {
+        display: inline-block;
+        background: var(--success);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 13px 26px;
+        border-radius: 7px;
+    }
+    .btn:hover { background: #256b28; }
+    .note {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 18px;
+        line-height: 1.5;
+    }
+    .empty {
+        text-align: center;
+        color: var(--muted);
+        padding: 30px 0;
+    }
+</style>
+</head>
+<body>
+<header>
+    <h1>&#127970; Enterprise Asset Management System</h1>
+    <p>IT hardware inventory, tracking &amp; auditing -- Windows client download</p>
+</header>
+<div class="wrap">
+    <div class="card">
+        {% if release %}
+            <span class="version-badge">Version {{ release.version }}</span>
+            <h2>Download for Windows</h2>
+            <p style="color: var(--muted); font-size: 14px; margin: 0;">
+                Works on Windows 10 and 11 -- no Python or extra software installation needed.
+            </p>
+
+            {% if release.changelog %}
+            <div class="changelog">{{ release.changelog }}</div>
+            {% endif %}
+
+            <a class="btn" href="{{ release.download_url }}">&#11015; Download AssetManager.exe</a>
+
+            {% if release.is_mandatory %}
+            <p class="note"><strong>Note:</strong> this is a required update -- installations on an
+            older version will be asked to update the next time they open the app.</p>
+            {% endif %}
+
+            <p class="note">
+                Already have the app installed? It checks for updates automatically -- you
+                don't need to redownload manually unless a specific device is missing it.
+            </p>
+        {% else %}
+            <div class="empty">
+                <p>No {{ channel }} release has been published yet.</p>
+                <p style="font-size: 13px;">Contact your IT department for installation instructions.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from core import excel_export
-from core.models import Asset, AssetChangeLog, Branch, Command, Device, Employee, Notification, Printer, SyncLog
+from core.models import AppRelease, Asset, AssetChangeLog, Branch, Command, Device, Employee, Notification, Printer, SyncLog
 
 
 @admin.register(Branch)
@@ -139,6 +139,41 @@ class CommandAdmin(admin.ModelAdmin):
     list_filter = ['command_type', 'status']
     search_fields = ['device__hostname']
     readonly_fields = ['delivered_at', 'completed_at', 'result_detail']
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(AppRelease)
+class AppReleaseAdmin(admin.ModelAdmin):
+    list_display = ['version', 'channel', 'latest_badge', 'is_mandatory', 'is_active', 'published_at']
+    list_filter = ['channel', 'is_active', 'is_mandatory']
+    search_fields = ['version', 'changelog']
+    readonly_fields = ['published_at']
+    actions = ['mark_as_latest', 'pull_release']
+
+    def latest_badge(self, obj):
+        if not obj.is_latest:
+            return ''
+        return format_html('<b style="color:#2e7d32">\u2605 Latest</b>')
+    latest_badge.short_description = 'Status'
+
+    @admin.action(description="\u2605 Mark as latest (for its channel)")
+    def mark_as_latest(self, request, queryset):
+        if queryset.count() != 1:
+            self.message_user(request, "Select exactly one release to mark as latest.", level='error')
+            return
+        release = queryset.first()
+        release.is_latest = True
+        release.is_active = True
+        release.save()
+        self.message_user(request, f"{release} is now the latest {release.get_channel_display()} release.")
+
+    @admin.action(description="Pull selected release(s) from circulation")
+    def pull_release(self, request, queryset):
+        queryset.update(is_active=False, is_latest=False)
 
     def save_model(self, request, obj, form, change):
         if not change:

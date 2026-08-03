@@ -7,10 +7,12 @@ from rest_framework.views import APIView
 
 from core import change_detection
 from core.authentication import DeviceKeyAuthentication
-from core.models import Asset, AssetChangeLog, Branch, Command, Device, Employee, Notification, SyncLog
+from core.models import AppRelease, Asset, AssetChangeLog, Branch, Command, Device, Employee, Notification, SyncLog
 from core.serializers import (
-    CommandResultSerializer, CommandSerializer, DeviceRegistrationSerializer, SyncRequestSerializer,
+    AppReleaseSerializer, CommandResultSerializer, CommandSerializer, DeviceRegistrationSerializer,
+    SyncRequestSerializer,
 )
+from core.versioning import is_newer
 
 
 class IsDevice(permissions.BasePermission):
@@ -216,3 +218,30 @@ class CommandResultView(APIView):
         command.completed_at = timezone.now()
         command.save()
         return Response(CommandSerializer(command).data)
+
+
+class AppLatestVersionView(APIView):
+    """GET /api/app/latest/?channel=stable&current_version=1.2.0
+    Public and unauthenticated on purpose (§1/§5 of the deployment plan):
+    a brand-new install has no device API key yet, and the download page
+    itself needs to call this before any device exists at all."""
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        channel = request.query_params.get('channel', 'stable')
+        current_version = request.query_params.get('current_version', '')
+
+        release = AppRelease.objects.filter(channel=channel, is_latest=True, is_active=True).first()
+        if release is None:
+            return Response({'detail': f"No published release for channel '{channel}'."},
+                             status=status.HTTP_404_NOT_FOUND)
+
+        data = AppReleaseSerializer(release).data
+        data['update_available'] = bool(current_version) and is_newer(release.version, current_version)
+        # A mandatory release is mandatory for anyone who isn't already on
+        # it -- not just when update_available happens to also be true --
+        # so an already-mandatory install can't be left in limbo by a
+        # missing/blank current_version from an older client build.
+        data['must_update'] = release.is_mandatory and data['update_available']
+        return Response(data)

@@ -311,3 +311,62 @@ class Command(models.Model):
 
     def __str__(self):
         return f"{self.command_type} -> {self.device.hostname} ({self.status})"
+
+
+class AppRelease(models.Model):
+    """One row per published build of the client EXE (§5/§8 of the
+    deployment plan: admin-controlled version management). The actual .exe
+    file is NOT stored here or on this server -- Render's disk is wiped on
+    every redeploy, so the file itself lives on GitHub Releases (or
+    equivalent free static hosting); this row just points at it.
+
+    'Latest' is an explicit admin choice (save() below enforces only one
+    per channel) rather than "whichever has the highest version number",
+    so a bad build can be rolled back instantly by re-marking the
+    previous release as latest -- no re-upload needed."""
+
+    CHANNEL_CHOICES = [
+        ('stable', 'Stable'),
+        ('beta', 'Beta'),
+    ]
+
+    version = models.CharField(max_length=30, help_text="e.g. 1.4.2")
+    channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES, default='stable')
+    changelog = models.TextField(blank=True, help_text="Shown to users before they update.")
+
+    download_url = models.URLField(
+        max_length=500,
+        help_text="Direct download link for this build (e.g. a GitHub Release asset URL).")
+    sha256 = models.CharField(
+        max_length=64, blank=True,
+        help_text="Optional SHA-256 of the EXE, so the client can verify the download wasn't corrupted.")
+
+    is_mandatory = models.BooleanField(
+        default=False,
+        help_text="If checked, devices on an older version must update before continuing to sync.")
+    is_latest = models.BooleanField(
+        default=False,
+        help_text="The version devices on this channel are told to update to. Only one per channel.")
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Uncheck to pull a broken release from circulation without deleting its history.")
+
+    published_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-published_at']
+        unique_together = [('version', 'channel')]
+
+    def __str__(self):
+        flag = ' (latest)' if self.is_latest else ''
+        return f"{self.get_channel_display()} {self.version}{flag}"
+
+    def save(self, *args, **kwargs):
+        if self.is_latest:
+            # Enforce "only one latest per channel" at the model layer
+            # (not just in the admin action) so this holds no matter how
+            # a release gets saved.
+            AppRelease.objects.filter(channel=self.channel, is_latest=True) \
+                .exclude(pk=self.pk).update(is_latest=False)
+        super().save(*args, **kwargs)

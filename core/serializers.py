@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Asset, Branch, Command, Device, Employee
+from core.models import Asset, AppRelease, Branch, Command, Device, Employee
 
 
 class DeviceRegistrationSerializer(serializers.Serializer):
@@ -55,3 +55,15 @@ class SyncRequestSerializer(serializers.Serializer):
     designation = serializers.CharField(max_length=120, required=False, allow_blank=True)
     department = serializers.CharField(max_length=120, required=False, allow_blank=True)
     asset = AssetSyncSerializer()
+
+
+class AppReleaseSerializer(serializers.ModelSerializer):
+    """Public response for GET /api/app/latest/ -- deliberately excludes
+    is_active/created_by/id since this is unauthenticated (a fresh install
+    has no device API key yet) and those fields are admin-only concerns."""
+
+    class Meta:
+        model = AppRelease
+        fields = ['version', 'channel', 'changelog', 'download_url', 'sha256',
+                  'is_mandatory', 'published_at']
+        read_only_fields = fields

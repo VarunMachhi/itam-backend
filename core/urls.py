@@ -8,4 +8,5 @@ urlpatterns = [
     path('heartbeat/', views.HeartbeatView.as_view(), name='heartbeat'),
     path('commands/pending/', views.PendingCommandsView.as_view(), name='commands-pending'),
     path('commands/<int:command_id>/result/', views.CommandResultView.as_view(), name='command-result'),
+    path('app/latest/', views.AppLatestVersionView.as_view(), name='app-latest-version'),
 ]

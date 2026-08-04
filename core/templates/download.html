@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Download - Enterprise Asset Management System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Download the Enterprise Asset Management client for Windows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #0a0f1e;
+        --bg-glow: #0d1730;
+        --surface: #111b33;
+        --surface-2: #16213e;
+        --border: #223055;
+        --text: #e9ecf6;
+        --text-muted: #8b95b3;
+        --text-dim: #5c6584;
+        --indigo: #6772e5;
+        --indigo-deep: #4147b3;
+        --cyan: #2dd9f0;
+        --green: #3ddc97;
+        --amber: #f2b84b;
+        --font-display: 'JetBrains Mono', monospace;
+        --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        line-height: 1.5;
+        overflow-x: hidden;
+    }
+    a { color: inherit; }
+
+    /* Ambient background: faint radial glow + drifting grid, sets the
+       "control room" register without competing with the signature piece */
+    .ambient {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse 900px 500px at 18% -10%, rgba(103,114,229,0.20), transparent 60%),
+            radial-gradient(ellipse 700px 500px at 100% 20%, rgba(45,217,240,0.10), transparent 55%),
+            var(--bg);
+        pointer-events: none;
+    }
+    .ambient::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, black 30%, transparent 75%);
+    }
+
+    .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+    /* -------------------- HERO -------------------- */
+    header.hero { padding: 64px 0 20px; }
+    .brand {
+        display: flex; align-items: center; gap: 10px;
+        font-family: var(--font-display); font-size: 13px; font-weight: 500;
+        letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase;
+        opacity: 0; animation: fade-up 0.6s ease forwards; animation-delay: 0.05s;
+    }
+    .brand .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+        box-shadow: 0 0 10px var(--green); }
+
+    .hero-grid {
+        display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px;
+        align-items: center; padding: 40px 0 30px;
+    }
+    @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } }
+
+    .eyebrow {
+        font-family: var(--font-display); font-size: 12.5px; letter-spacing: 0.08em;
+        color: var(--cyan); text-transform: uppercase; margin-bottom: 18px;
+        opacity: 0; animation: fade-up 0.6s ease forwards; animation-delay: 0.15s;
+    }
+    h1 {
+        font-family: var(--font-display); font-weight: 800; letter-spacing: -0.01em;
+        font-size: clamp(32px, 4.4vw, 52px); line-height: 1.08; color: #fff;
+        opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.25s;
+    }
+    h1 span { color: var(--cyan); }
+    .sub {
+        margin-top: 20px; max-width: 480px; font-size: 16.5px; color: var(--text-muted);
+        opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.4s;
+    }
+
+    .cta-block { margin-top: 32px; opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.55s; }
+    .btn-download {
+        position: relative; display: inline-flex; align-items: center; gap: 12px;
+        background: linear-gradient(135deg, var(--indigo), var(--indigo-deep));
+        color: #fff; text-decoration: none; font-weight: 700; font-size: 16px;
+        padding: 16px 28px; border-radius: 10px; overflow: hidden;
+        box-shadow: 0 8px 30px -8px rgba(103,114,229,0.55), inset 0 1px 0 rgba(255,255,255,0.15);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 36px -6px rgba(103,114,229,0.7), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .btn-download:active { transform: translateY(0); }
+    .btn-download .ring {
+        position: absolute; inset: -2px; border-radius: 12px;
+        border: 1.5px solid rgba(45,217,240,0.6); opacity: 0;
+        animation: ring-pulse 2.4s ease-out infinite;
+    }
+    .btn-download svg { width: 19px; height: 19px; flex-shrink: 0; }
+
+    .cta-meta {
+        margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px 18px;
+        font-family: var(--font-display); font-size: 12.5px; color: var(--text-dim);
+    }
+    .cta-meta b { color: var(--text-muted); font-weight: 600; }
+    .mandatory-flag {
+        display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
+        font-size: 13px; color: var(--amber); background: rgba(242,184,75,0.08);
+        border: 1px solid rgba(242,184,75,0.25); padding: 8px 12px; border-radius: 7px;
+    }
+    .trust-line {
+        margin-top: 22px; font-size: 13px; color: var(--text-dim);
+        opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.68s;
+    }
+    .trust-line b { color: var(--text-muted); }
+
+    /* -------------------- SIGNATURE: device enrollment diagram -------------------- */
+    .diagram-wrap {
+        opacity: 0; animation: fade-in 0.9s ease forwards; animation-delay: 0.3s;
+    }
+    .diagram-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+    .node-glow { filter: drop-shadow(0 0 10px currentColor); }
+    .cloud-fill { fill: var(--surface-2); stroke: var(--indigo); stroke-width: 1.6; }
+    .device-body { fill: var(--surface); stroke: var(--border); stroke-width: 1.4; }
+    .device-body.lit { stroke: var(--green); }
+    .line-path { fill: none; stroke: var(--border); stroke-width: 1.4; stroke-dasharray: 4 5; }
+    .line-path.lit { stroke: rgba(61,220,151,0.55); }
+
+    .status-dot { fill: var(--text-dim); }
+    .status-dot.lit { fill: var(--green); }
+
+    @keyframes draw-line { to { stroke-dashoffset: 0; } }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fade-in { to { opacity: 1; } }
+    @keyframes pop-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+    @keyframes ring-pulse {
+        0% { opacity: 0.9; transform: scale(1); }
+        100% { opacity: 0; transform: scale(1.12); }
+    }
+    @keyframes breathe {
+        0%, 100% { opacity: 0.55; } 50% { opacity: 1; }
+    }
+    @keyframes travel-1 { 0% { cx: 300px; cy: 96px; } 100% { cx: 84px; cy: 386px; } }
+    @keyframes travel-2 { 0% { cx: 300px; cy: 96px; } 100% { cx: 192px; cy: 352px; } }
+    @keyframes travel-3 { 0% { cx: 300px; cy: 96px; } 100% { cx: 300px; cy: 336px; } }
+    @keyframes travel-4 { 0% { cx: 300px; cy: 96px; } 100% { cx: 408px; cy: 352px; } }
+    @keyframes travel-5 { 0% { cx: 300px; cy: 96px; } 100% { cx: 516px; cy: 386px; } }
+
+    /* -------------------- SPEC STRIP -------------------- */
+    .spec-strip {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+        background: var(--border); border: 1px solid var(--border); border-radius: 12px;
+        overflow: hidden; margin: 56px 0;
+    }
+    @media (max-width: 760px) { .spec-strip { grid-template-columns: repeat(2, 1fr); } }
+    .spec-card { background: var(--surface); padding: 22px 20px; }
+    .spec-tag {
+        font-family: var(--font-display); font-size: 11px; font-weight: 700;
+        letter-spacing: 0.08em; color: var(--cyan);
+    }
+    .spec-desc { margin-top: 10px; font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+
+    /* -------------------- COMPATIBILITY BAR -------------------- */
+    .compat-bar {
+        display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+        margin: 0 0 56px;
+    }
+    .pill {
+        font-family: var(--font-display); font-size: 12px; color: var(--text-muted);
+        background: var(--surface); border: 1px solid var(--border);
+        padding: 7px 13px; border-radius: 20px;
+    }
+
+    /* -------------------- CHANGELOG PANEL -------------------- */
+    .log-panel {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+        margin-bottom: 64px; overflow: hidden;
+    }
+    .log-head {
+        display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+        border-bottom: 1px solid var(--border); font-family: var(--font-display);
+        font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em;
+    }
+    .log-head .dots { display: flex; gap: 6px; }
+    .log-head .dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+    .log-body {
+        font-family: var(--font-display); font-size: 13.5px; color: var(--text-muted);
+        padding: 18px 20px; white-space: pre-wrap; line-height: 1.7;
+        border-left: 2px solid var(--green);
+    }
+    .log-body::before { content: '$ changelog --version '; color: var(--text-dim); }
+
+    /* -------------------- EMPTY STATE -------------------- */
+    .empty-state {
+        text-align: center; padding: 100px 20px; color: var(--text-muted);
+    }
+    .empty-state h2 { font-family: var(--font-display); color: #fff; font-size: 22px; margin-bottom: 10px; }
+
+    footer {
+        border-top: 1px solid var(--border); padding: 26px 0 40px;
+        font-size: 13px; color: var(--text-dim); text-align: center;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+        [class*="travel-"] { animation: none !important; }
+    }
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+
+{% if release %}
+<div class="wrap">
+    <header class="hero">
+        <div class="brand"><span class="dot"></span> Enterprise Asset Management</div>
+    </header>
+
+    <div class="hero-grid">
+        <div>
+            <div class="eyebrow">Windows client &middot; v{{ release.version }}</div>
+            <h1>Your computer,<br>cataloged <span>automatically</span>.</h1>
+            <p class="sub">No Python, no setup, no waiting on IT. It finds your hardware, keeps a
+                local record, and syncs to the cloud dashboard the moment you're online.</p>
+
+            <div class="cta-block">
+                <a class="btn-download" href="{{ release.download_url }}">
+                    <span class="ring"></span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M6 11l6 6 6-6"/><path d="M5 21h14"/></svg>
+                    Download for Windows
+                </a>
+                <div class="cta-meta">
+                    <span><b>v{{ release.version }}</b></span>
+                    <span>&middot;</span>
+                    <span>Windows 10 &amp; 11</span>
+                    <span>&middot;</span>
+                    <span>Single .exe, no installer required</span>
+                </div>
+                {% if release.is_mandatory %}
+                <div class="mandatory-flag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+                    Required update &mdash; older installs will be asked to update automatically
+                </div>
+                {% endif %}
+            </div>
+
+            {% if device_count > 0 %}
+            <p class="trust-line">Already registered on <b>{{ device_count }}</b> device{{ device_count|pluralize }} across your organization.</p>
+            {% endif %}
+        </div>
+
+        <div class="diagram-wrap">
+            <svg viewBox="0 0 600 460" xmlns="http://www.w3.org/2000/svg">
+                <!-- connector lines, drawn on load -->
+                <g stroke-linecap="round">
+                    <path class="line-path lit" d="M300,120 L84,370" pathLength="100"
+                          style="stroke-dasharray:100; stroke-dashoffset:100; animation: draw-line 0.7s ease-out 0.9s forwards;"/>
+                    <path class="line-path lit" d="M300,120 L192,340" pathLength="100"
+                          style="stroke-dasharray:100; stroke-dashoffset:100; animation: draw-line 0.7s ease-out 1.05s forwards;"/>
+                    <path class="line-path lit" d="M300,120 L300,325" pathLength="100"
+                          style="stroke-dasharray:100; stroke-dashoffset:100; animation: draw-line 0.7s ease-out 1.2s forwards;"/>
+                    <path class="line-path lit" d="M300,120 L408,340" pathLength="100"
+                          style="stroke-dasharray:100; stroke-dashoffset:100; animation: draw-line 0.7s ease-out 1.35s forwards;"/>
+                    <path class="line-path lit" d="M300,120 L516,370" pathLength="100"
+                          style="stroke-dasharray:100; stroke-dashoffset:100; animation: draw-line 0.7s ease-out 1.5s forwards;"/>
+                </g>
+
+                <!-- ambient traveling sync pulses -->
+                <circle class="node-glow" r="3.2" fill="var(--cyan)" style="animation: travel-1 2.6s ease-in-out 2.4s infinite alternate; opacity:0.85;"/>
+                <circle class="node-glow" r="3.2" fill="var(--cyan)" style="animation: travel-2 2.6s ease-in-out 2.6s infinite alternate; opacity:0.85;"/>
+                <circle class="node-glow" r="3.2" fill="var(--cyan)" style="animation: travel-3 2.6s ease-in-out 2.8s infinite alternate; opacity:0.85;"/>
+                <circle class="node-glow" r="3.2" fill="var(--cyan)" style="animation: travel-4 2.6s ease-in-out 3.0s infinite alternate; opacity:0.85;"/>
+                <circle class="node-glow" r="3.2" fill="var(--cyan)" style="animation: travel-5 2.6s ease-in-out 3.2s infinite alternate; opacity:0.85;"/>
+
+                <!-- cloud node -->
+                <g style="opacity:0; animation: pop-in 0.6s ease-out 0.35s forwards;">
+                    <circle class="cloud-fill node-glow" cx="300" cy="96" r="40" style="color: var(--indigo); animation: breathe 3.4s ease-in-out infinite;"/>
+                    <path d="M281,100 a12,12 0 0 1 3,-23 a15,15 0 0 1 28,-3 a11,11 0 0 1 2,22 z"
+                          fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linejoin="round" transform="translate(-4,-2)"/>
+                </g>
+
+                <!-- device nodes -->
+                <g style="opacity:0; animation: pop-in 0.5s ease-out 1.55s forwards;">
+                    <rect class="device-body lit" x="60" y="366" width="48" height="38" rx="6"/>
+                    <rect x="72" y="376" width="24" height="16" rx="2" fill="none" stroke="var(--text-dim)" stroke-width="1.4"/>
+                    <circle class="status-dot lit" cx="98" cy="374" r="3"/>
+                </g>
+                <g style="opacity:0; animation: pop-in 0.5s ease-out 1.7s forwards;">
+                    <path class="device-body lit" d="M170,362 h44 l6,30 h-56 z"/>
+                    <rect x="180" y="368" width="24" height="16" rx="1.5" fill="none" stroke="var(--text-dim)" stroke-width="1.2"/>
+                    <circle class="status-dot lit" cx="212" cy="368" r="3"/>
+                </g>
+                <g style="opacity:0; animation: pop-in 0.5s ease-out 1.85s forwards;">
+                    <rect class="device-body lit" x="270" y="336" width="60" height="42" rx="5"/>
+                    <rect x="280" y="345" width="40" height="24" rx="2" fill="none" stroke="var(--text-dim)" stroke-width="1.4"/>
+                    <rect x="296" y="378" width="8" height="7" fill="var(--surface)" stroke="var(--border)"/>
+                    <circle class="status-dot lit" cx="320" cy="345" r="3"/>
+                </g>
+                <g style="opacity:0; animation: pop-in 0.5s ease-out 2.0s forwards;">
+                    <rect class="device-body lit" x="386" y="356" width="44" height="30" rx="4"/>
+                    <rect x="392" y="348" width="32" height="10" rx="2" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2"/>
+                    <circle class="status-dot lit" cx="422" cy="360" r="3"/>
+                </g>
+                <g style="opacity:0; animation: pop-in 0.5s ease-out 2.15s forwards;">
+                    <rect class="device-body lit" x="494" y="368" width="46" height="36" rx="6"/>
+                    <rect x="504" y="376" width="26" height="18" rx="2" fill="none" stroke="var(--text-dim)" stroke-width="1.4"/>
+                    <circle class="status-dot lit" cx="532" cy="374" r="3"/>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <div class="spec-strip">
+        <div class="spec-card">
+            <div class="spec-tag">AUTO-DETECT</div>
+            <div class="spec-desc">Reads CPU, RAM, storage, and monitor specs on its own &mdash; nothing to type in by hand.</div>
+        </div>
+        <div class="spec-card">
+            <div class="spec-tag">OFFLINE-FIRST</div>
+            <div class="spec-desc">Keeps working with no internet connection, then syncs the moment you're back online.</div>
+        </div>
+        <div class="spec-card">
+            <div class="spec-tag">SELF-UPDATING</div>
+            <div class="spec-desc">Checks for new versions on its own and installs them without any reinstalling.</div>
+        </div>
+        <div class="spec-card">
+            <div class="spec-tag">ZERO SETUP</div>
+            <div class="spec-desc">No Python, no dependencies to install &mdash; one .exe file and you're running.</div>
+        </div>
+    </div>
+
+    <div class="compat-bar">
+        <span class="pill">&#9679; Windows 10</span>
+        <span class="pill">&#9679; Windows 11</span>
+        <span class="pill">32-bit &amp; 64-bit CPUs</span>
+        <span class="pill">HDD &amp; SSD systems</span>
+    </div>
+
+    {% if release.changelog %}
+    <div class="log-panel">
+        <div class="log-head"><span class="dots"><span></span><span></span><span></span></span> release-notes.log</div>
+        <div class="log-body">{{ release.version }}
+
+{{ release.changelog }}</div>
+    </div>
+    {% endif %}
+
+    <footer>
+        Enterprise Asset Management System &mdash; IT hardware inventory, tracking &amp; auditing.<br>
+        Trouble installing? Contact your IT department.
+    </footer>
+</div>
+
+{% else %}
+<div class="wrap">
+    <div class="empty-state">
+        <h2>No {{ channel }} release published yet</h2>
+        <p>Contact your IT department for installation instructions.</p>
+    </div>
+</div>
+{% endif %}
+
+</body>
+</html>

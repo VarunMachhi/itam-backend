@@ -172,3 +172,29 @@ if EMAIL_HOST:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# ----------------------------------------------------------------------
+# Logging
+# ----------------------------------------------------------------------
+# Django's built-in default logging config only sends request-time
+# tracebacks to the console when DEBUG=True (its console handler has a
+# require_debug_true filter) -- in production (DEBUG=False) it instead
+# ONLY emails ADMINS, which we don't have configured, so every unhandled
+# 500 was being silently discarded with nothing in Render's logs at all.
+# This override sends them to stdout/stderr unconditionally, which
+# Render (and any platform that scrapes container output) picks up.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {'format': '{levelname} {asctime} {name} {message}', 'style': '{'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'verbose'},
+    },
+    'root': {'handlers': ['console'], 'level': 'WARNING'},
+    'loggers': {
+        'django': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+    },
+}

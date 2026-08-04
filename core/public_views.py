@@ -5,7 +5,7 @@ concerns don't get tangled together.
 """
 from django.shortcuts import render
 
-from core.models import AppRelease
+from core.models import AppRelease, Device
 
 
 def download_page(request):
@@ -16,4 +16,6 @@ def download_page(request):
     extra network round trip when we're already inside the same process."""
     channel = request.GET.get('channel', 'stable')
     release = AppRelease.objects.filter(channel=channel, is_latest=True, is_active=True).first()
-    return render(request, 'core/download.html', {'release': release, 'channel': channel})
+    device_count = Device.objects.count()
+    return render(request, 'core/download.html',
+                  {'release': release, 'channel': channel, 'device_count': device_count})

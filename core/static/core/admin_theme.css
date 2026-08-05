@@ -1,0 +1,64 @@
+/* Reskins the built-in Django admin to match the app's actual brand
+   (same indigo/cyan palette as the public download page) by overriding
+   Django's admin CSS custom properties -- the officially supported way
+   to reskin, so this survives Django upgrades instead of fighting
+   specificity against admin/css/base.css directly. */
+:root {
+    --primary: #3949ab;
+    --primary-fg: #fff;
+    --header-color: #fff;
+    --header-branding-color: #fff;
+    --header-bg: #202b52;
+    --header-link-color: #cfd6f5;
+    --link-fg: #3949ab;
+    --link-hover-color: #22a6c2;
+    --link-selected-fg: #22a6c2;
+    --selected-bg: #eef0fb;
+    --selected-row: #eef6fb;
+    --button-bg: #3949ab;
+    --button-hover-bg: #2c3888;
+    --default-button-bg: #3949ab;
+    --default-button-hover-bg: #2c3888;
+    --breadcrumbs-bg: #202b52;
+    --breadcrumbs-fg: #b7bfe8;
+    --breadcrumbs-link-fg: #fff;
+}
+
+#branding {
+    display: flex;
+    align-items: center;
+}
+#branding h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#branding h1 a:link, #branding h1 a:visited {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.brand-logo {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+div.breadcrumbs a {
+    color: var(--breadcrumbs-link-fg);
+}
+
+.module h2, .module caption, .inline-group h2 {
+    border-radius: 4px 4px 0 0;
+}
+
+#nav-sidebar .current-app .section:link, #nav-sidebar .current-app .section:visited {
+    font-weight: 700;
+}
+
+.object-tools a:link, .object-tools a:visited {
+    background: var(--button-bg);
+}
+.object-tools a:hover {
+    background: var(--button-hover-bg);
+}

@@ -157,7 +157,7 @@ class AppReleaseAdmin(admin.ModelAdmin):
     def latest_badge(self, obj):
         if not obj.is_latest:
             return ''
-        return format_html('<b style="color:#2e7d32">\u2605 Latest</b>')
+        return format_html('<b style="{}">{} Latest</b>', 'color:#2e7d32', '\u2605')
     latest_badge.short_description = 'Status'
 
     @admin.action(description="\u2605 Mark as latest (for its channel)")

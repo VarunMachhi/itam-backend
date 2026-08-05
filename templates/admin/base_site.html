@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:"Enterprise Asset Management" }}{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'core/admin_theme.css' %}">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <svg class="brand-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="24" cy="14" r="10" fill="none" stroke="#fff" stroke-width="2.4"/>
+            <path d="M17,17 a7,7 0 0 1 2,-14 a9,9 0 0 1 17,-2 a6.5,6.5 0 0 1 1,13 z"
+                  fill="none" stroke="#7ee8f5" stroke-width="2" stroke-linejoin="round" transform="translate(2,3) scale(0.55) translate(6,3)"/>
+            <rect x="6" y="32" width="10" height="8" rx="1.6" fill="none" stroke="#fff" stroke-width="2"/>
+            <rect x="19" y="30" width="10" height="10" rx="1.6" fill="none" stroke="#fff" stroke-width="2"/>
+            <rect x="32" y="33" width="10" height="7" rx="1.6" fill="none" stroke="#fff" stroke-width="2"/>
+            <path d="M24,24 L11,32 M24,24 L24,30 M24,24 L37,33" stroke="#7ee8f5" stroke-width="1.6" stroke-dasharray="2 3"/>
+        </svg>
+        <span>{{ site_header|default:"Enterprise Asset Management" }}</span>
+    </a>
+</h1>
+{% endblock %}

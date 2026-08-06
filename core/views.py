@@ -119,6 +119,8 @@ class SyncView(APIView):
 
                 if data.get('ip_address'):
                     device.ip_address = data['ip_address']
+                if data.get('app_version'):
+                    device.app_version = data['app_version']
                 device.last_seen = timezone.now()
                 device.last_sync = timezone.now()
                 device.save()
@@ -180,6 +182,10 @@ class HeartbeatView(APIView):
     def post(self, request):
         device = request.user.device
         device.touch()
+        app_version = request.data.get('app_version', '')
+        if app_version:
+            device.app_version = app_version
+            device.save(update_fields=['app_version'])
         pending_exists = Command.objects.filter(device=device, status='pending').exists()
         return Response({'ok': True, 'commands_pending': pending_exists})
 

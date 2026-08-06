@@ -72,6 +72,9 @@ class Device(models.Model):
     ip_address = models.CharField(max_length=64, blank=True)
     os_info = models.CharField(max_length=120, blank=True)
     device_type = models.CharField(max_length=10, choices=DEVICE_TYPE_CHOICES, default='Unknown')
+    app_version = models.CharField(
+        max_length=20, blank=True,
+        help_text="Version of the client EXE last reported by this device (via sync or heartbeat).")
 
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name='devices')
     employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name='devices')

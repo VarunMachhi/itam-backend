@@ -54,6 +54,7 @@ class SyncRequestSerializer(serializers.Serializer):
     employee_name = serializers.CharField(max_length=120, required=False, allow_blank=True)
     designation = serializers.CharField(max_length=120, required=False, allow_blank=True)
     department = serializers.CharField(max_length=120, required=False, allow_blank=True)
+    app_version = serializers.CharField(max_length=20, required=False, allow_blank=True)
     asset = AssetSyncSerializer()
 
 

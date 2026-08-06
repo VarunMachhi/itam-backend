@@ -3,6 +3,7 @@ from django.utils.html import format_html
 
 from core import excel_export
 from core.models import AppRelease, Asset, AssetChangeLog, Branch, Command, Device, Employee, Notification, Printer, SyncLog
+from core.versioning import is_newer
 
 
 @admin.register(Branch)
@@ -34,7 +35,7 @@ class AssetInline(admin.StackedInline):
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
     list_display = ['hostname', 'employee', 'branch', 'device_type', 'status_badge',
-                     'last_seen', 'last_sync', 'is_active']
+                     'app_version', 'version_status', 'last_seen', 'last_sync', 'is_active']
     list_filter = ['branch', 'device_type', 'is_active']
     search_fields = ['hostname', 'mac_address', 'employee__name', 'id']
     readonly_fields = ['id', 'api_key', 'registered_at', 'last_seen', 'last_sync']
@@ -46,6 +47,21 @@ class DeviceAdmin(admin.ModelAdmin):
         label = 'Online' if obj.is_online else 'Offline'
         return format_html('<b style="color:{}">{}</b>', color, label)
     status_badge.short_description = 'Status'
+
+    def version_status(self, obj):
+        """Flags devices running behind the current latest stable release,
+        so an admin can see update rollout progress across branches at a
+        glance (\u00a713 'track update success/failure across branches')
+        without having to open each device individually."""
+        if not obj.app_version:
+            return format_html('<span style="{}">Unknown</span>', 'color:#999')
+        latest = AppRelease.objects.filter(channel='stable', is_latest=True, is_active=True).first()
+        if latest is None:
+            return ''
+        if is_newer(latest.version, obj.app_version):
+            return format_html('<span style="color:#c62828">\u26a0 Behind (latest: {})</span>', latest.version)
+        return format_html('<span style="{}">{} Current</span>', 'color:#2e7d32', '\u2713')
+    version_status.short_description = 'Update Status'
 
     @admin.action(description="Deactivate selected devices (revokes API key access)")
     def deactivate_devices(self, request, queryset):

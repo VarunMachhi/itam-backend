@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from django import forms
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 
 from core import excel_export
 from core.models import AppRelease, Asset, AssetChangeLog, Branch, Command, Device, Employee, Notification, Printer, SyncLog
@@ -29,8 +31,60 @@ class EmployeeAdmin(admin.ModelAdmin):
 class AssetInline(admin.StackedInline):
     model = Asset
     can_delete = False
-    readonly_fields = [f.name for f in Asset._meta.fields if f.name not in ('id', 'device')]
     extra = 0
+    readonly_fields = [f.name for f in Asset._meta.fields if f.name not in
+                        ('id', 'device', 'ram_devices', 'storage_devices', 'serial_verification')] + \
+                       ['ram_devices_display', 'storage_devices_display', 'serial_verification_display']
+    fields = [f.name for f in Asset._meta.fields if f.name not in
+              ('id', 'device', 'ram_devices', 'storage_devices', 'serial_verification')] + \
+             ['ram_devices_display', 'storage_devices_display', 'serial_verification_display']
+
+    def ram_devices_display(self, obj):
+        devices = obj.ram_devices or []
+        if not devices:
+            return "No RAM device details recorded."
+        return format_html('<ul style="margin:0; padding-left:18px;">{}</ul>', format_html_join(
+            '', '<li><b>Slot {}:</b> {} {} {} @ {} (SN: {})</li>',
+            ((d.get('slot', '?'), d.get('size', '?'), d.get('manufacturer', ''),
+              d.get('part_number', ''), d.get('speed', '?'), d.get('serial', 'unknown'))
+             for d in devices)
+        ))
+    ram_devices_display.short_description = "RAM Devices"
+
+    def storage_devices_display(self, obj):
+        devices = obj.storage_devices or []
+        if not devices:
+            return "No storage device details recorded."
+        return format_html('<ul style="margin:0; padding-left:18px;">{}</ul>', format_html_join(
+            '', '<li><b>{}</b> \u2014 {} {} ({}), SN: {}</li>',
+            ((d.get('name') or d.get('model', 'Unknown drive'), d.get('size', '?'),
+              d.get('type', ''), d.get('interface', '?'), d.get('serial', 'unknown'))
+             for d in devices)
+        ))
+    storage_devices_display.short_description = "Storage Devices"
+
+    def serial_verification_display(self, obj):
+        entries = obj.serial_verification or {}
+        if not entries:
+            return "No manual serial corrections recorded."
+        rows = []
+        for field_name, info in entries.items():
+            label = field_name.replace('_', ' ').title()
+            detected = info.get('detected')
+            current = info.get('current', '?')
+            verified_by = info.get('verified_by', 'unknown')
+            verified_at_raw = info.get('verified_at', '')
+            try:
+                verified_at = datetime.fromisoformat(verified_at_raw).strftime('%b %d, %Y %I:%M %p')
+            except (ValueError, TypeError):
+                verified_at = verified_at_raw or 'unknown time'
+            detected_note = f"auto-detect found \u201c{detected}\u201d, corrected" if detected else \
+                "auto-detect found nothing"
+            rows.append((label, current, detected_note, verified_by, verified_at))
+        return format_html('<ul style="margin:0; padding-left:18px;">{}</ul>', format_html_join(
+            '', '<li><b>{}:</b> {} \u2014 {}; verified by {} on {}</li>', rows
+        ))
+    serial_verification_display.short_description = "Manually Verified Serials"
 
 
 @admin.register(Device)

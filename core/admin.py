@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 
@@ -162,8 +163,32 @@ class CommandAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class AppReleaseForm(forms.ModelForm):
+    """Requires a SHA-256 whenever a release is marked 'is_latest' -- the
+    client now hard-refuses to install any update with no published
+    checksum (see asset_manager.py's _download_update_file), since a
+    missing hash was very likely the reason corrupted downloads were
+    installing successfully on more than one machine. This mirrors that
+    requirement here, so the mistake gets caught at publish time instead
+    of only being discovered later on an employee's PC."""
+
+    class Meta:
+        model = AppRelease
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('is_latest') and not cleaned_data.get('sha256'):
+            raise forms.ValidationError(
+                "A SHA-256 checksum is required before a release can be marked 'Is latest' -- "
+                "copy it from the GitHub Release page's Assets list (use the copy icon, not the "
+                "truncated display text) and paste the full 64-character value here.")
+        return cleaned_data
+
+
 @admin.register(AppRelease)
 class AppReleaseAdmin(admin.ModelAdmin):
+    form = AppReleaseForm
     list_display = ['version', 'channel', 'latest_badge', 'is_mandatory', 'is_active', 'published_at']
     list_filter = ['channel', 'is_active', 'is_mandatory']
     search_fields = ['version', 'changelog']
@@ -182,6 +207,13 @@ class AppReleaseAdmin(admin.ModelAdmin):
             self.message_user(request, "Select exactly one release to mark as latest.", level='error')
             return
         release = queryset.first()
+        if not release.sha256:
+            self.message_user(
+                request,
+                f"Can't mark {release} as latest -- it has no SHA-256 checksum. "
+                f"Open it and add one first (copy via the icon on the GitHub Release "
+                f"page, not the truncated display text).", level='error')
+            return
         release.is_latest = True
         release.is_active = True
         release.save()

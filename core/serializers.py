@@ -37,14 +37,16 @@ class AssetSyncSerializer(serializers.ModelSerializer):
 
 
 class CommandSerializer(serializers.ModelSerializer):
+    command_type_display = serializers.CharField(source='get_command_type_display', read_only=True)
+
     class Meta:
         model = Command
-        fields = ['id', 'command_type', 'payload', 'status', 'created_at']
+        fields = ['id', 'command_type', 'command_type_display', 'payload', 'status', 'created_at']
         read_only_fields = fields
 
 
 class CommandResultSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(choices=['completed', 'failed'])
+    status = serializers.ChoiceField(choices=['seen', 'acknowledged', 'processing', 'completed', 'failed'])
     result_detail = serializers.CharField(required=False, allow_blank=True, default='')
 
 

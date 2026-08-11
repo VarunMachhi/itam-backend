@@ -294,14 +294,19 @@ class Command(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('delivered', 'Delivered'),
+        ('seen', 'Seen by employee'),
+        ('acknowledged', 'Acknowledged by employee'),
+        ('processing', 'Processing'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
+        ('expired', 'Expired'),
+        ('cancelled', 'Cancelled'),
     ]
 
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='commands')
     command_type = models.CharField(max_length=20, choices=COMMAND_TYPES)
     payload = models.JSONField(default=dict, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='pending')
 
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

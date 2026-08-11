@@ -198,8 +198,20 @@ class PendingCommandsView(APIView):
 
     def get(self, request):
         device = request.user.device
-        commands = Command.objects.filter(device=device, status='pending')
-        commands.update(status='delivered', delivered_at=timezone.now())
+        # Evaluate into a real list FIRST -- calling .update() on a lazy
+        # queryset changes the underlying rows, and re-iterating that same
+        # queryset afterward re-runs the query, which by then no longer
+        # matches status='pending' at all. That silently returned an
+        # empty list to every caller despite correctly marking commands
+        # delivered in the database -- confirmed by testing directly.
+        commands = list(Command.objects.filter(device=device, status='pending'))
+        now = timezone.now()
+        for cmd in commands:
+            cmd.status = 'delivered'
+            cmd.delivered_at = now
+        if commands:
+            Command.objects.filter(id__in=[c.id for c in commands]).update(
+                status='delivered', delivered_at=now)
         return Response(CommandSerializer(commands, many=True).data)
 
 
@@ -219,9 +231,11 @@ class CommandResultView(APIView):
         serializer = CommandResultSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        command.status = serializer.validated_data['status']
+        new_status = serializer.validated_data['status']
+        command.status = new_status
         command.result_detail = serializer.validated_data.get('result_detail', '')
-        command.completed_at = timezone.now()
+        if new_status in ('completed', 'failed'):
+            command.completed_at = timezone.now()
         command.save()
         return Response(CommandSerializer(command).data)
 

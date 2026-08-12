@@ -41,7 +41,8 @@ class CommandSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Command
-        fields = ['id', 'command_type', 'command_type_display', 'payload', 'status', 'created_at']
+        fields = ['id', 'command_type', 'command_type_display', 'payload', 'status',
+                  'created_at', 'delivered_at', 'completed_at']
         read_only_fields = fields
 
 

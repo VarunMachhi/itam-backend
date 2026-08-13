@@ -204,8 +204,38 @@ class NotificationAdmin(admin.ModelAdmin):
         queryset.update(is_read=False)
 
 
+class CommandForm(forms.ModelForm):
+    """Replaces the raw JSON 'payload' field with a plain text box -- an
+    admin creating a command shouldn't need to know JSON syntax just to
+    type an instruction. Currently the only payload shape used anywhere
+    (client and admin) is {'message': '...'}, so this form is the single
+    place that JSON structure lives; if a second payload field is ever
+    needed, extend both this form and the client's payload.get(...) calls
+    together."""
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 3}), required=False,
+        help_text="The instruction/message shown to the employee -- plain text, no JSON needed.")
+
+    class Meta:
+        model = Command
+        exclude = ['payload']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and isinstance(self.instance.payload, dict):
+            self.fields['message'].initial = self.instance.payload.get('message', '')
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.payload = {'message': self.cleaned_data.get('message', '')}
+        if commit:
+            instance.save()
+        return instance
+
+
 @admin.register(Command)
 class CommandAdmin(admin.ModelAdmin):
+    form = CommandForm
     list_display = ['created_at', 'device', 'command_type', 'status', 'delivered_at', 'completed_at']
     list_filter = ['command_type', 'status']
     search_fields = ['device__hostname']

@@ -316,6 +316,7 @@ class Notification(models.Model):
         ('sync_failed', 'Synchronization failed'),
         ('duplicate_asset', 'Duplicate asset detected'),
         ('missing_info', 'Missing hardware information'),
+        ('multiple_devices', 'Employee has multiple active devices'),
     ]
     SEVERITY_CHOICES = [('info', 'Info'), ('warning', 'Warning'), ('critical', 'Critical')]
 

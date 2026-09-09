@@ -8,6 +8,9 @@ from rest_framework.views import APIView
 from core import change_detection
 from core.assignment_tracking import record_assignment_if_changed
 from core.authentication import DeviceKeyAuthentication
+from core.conflict_detection import (
+    find_duplicate_serials, notify_duplicate_serials_if_new, notify_if_employee_has_multiple_active_devices,
+)
 from core.models import AppRelease, Asset, AssetChangeLog, Branch, Command, Device, Employee, Notification, SyncLog
 from core.serializers import (
     AppReleaseSerializer, CommandResultSerializer, CommandSerializer, DeviceRegistrationSerializer,
@@ -128,6 +131,7 @@ class SyncView(APIView):
                 record_assignment_if_changed(device, device.employee, device.branch,
                                               notes='Recorded automatically during sync.')
                 device.save()
+                notify_if_employee_has_multiple_active_devices(device.employee)
 
                 existing_asset = Asset.objects.filter(device=device).first()
                 is_first_sync = existing_asset is None
@@ -139,6 +143,10 @@ class SyncView(APIView):
                 for field, value in asset_data.items():
                     setattr(existing_asset, field, value)
                 existing_asset.save()
+
+                duplicate_conflicts = find_duplicate_serials(device, asset_data)
+                if duplicate_conflicts:
+                    notify_duplicate_serials_if_new(device, duplicate_conflicts)
 
                 for change in changes:
                     AssetChangeLog.objects.create(
